@@ -1,6 +1,3 @@
 {
-  "version": 2,
-  "functions": {
-    "api/store.js": { "runtime": "vercel-nodejs@3.0.0" }
-  }
+  "version": 2
 }
