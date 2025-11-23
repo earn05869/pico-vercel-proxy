@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 
 // Your Google Apps Script URL
-const GSHEET_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+const GSHEET_URL = "https://script.google.com/macros/s/AKfycbz3CMaypQa4JiNUTufOhxs8RNgIGGvgX3DXWZyiV5ovSJRp6sa_liZ10-wqRMHwVIZP/exec";
 
 // Helper to parse request body in Vercel serverless
 async function getJSON(req) {
