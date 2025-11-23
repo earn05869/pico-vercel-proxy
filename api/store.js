@@ -1,27 +1,46 @@
-// api/store.js
 import fetch from "node-fetch";
 
+// Your Google Apps Script URL
+const GSHEET_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+
+// Helper to parse request body in Vercel serverless
+async function getJSON(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", chunk => body += chunk);
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(body));
+      } catch (err) {
+        resolve({});
+      }
+    });
+    req.on("error", err => reject(err));
+  });
+}
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).send("Only POST allowed");
-  }
-
   try {
-    // Replace with your GAS URL (Deploy -> Web app)
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzt3_B5MFUNl_WFwWWPHWuYxtNLudg3O8GbrSTq76kSd7E3YIRwI5hQpzsFgEZvIP8/exec";
+    const data = req.method === "POST" ? await getJSON(req) : req.query;
 
-    // Forward payload to GAS as JSON body
-    const r = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+    if (!data.device || !data.raw || !data.voltage) {
+      res.status(400).send("Missing parameters");
+      return;
+    }
+
+    // Forward to Google Apps Script
+    const qs = new URLSearchParams({
+      device: data.device,
+      raw: data.raw,
+      voltage: data.voltage
     });
 
-    const text = await r.text();
-    return res.status(200).send(text);
+    const gsResponse = await fetch(`${GSHEET_URL}?${qs.toString()}`);
+    const text = await gsResponse.text();
 
+    res.status(200).send(text);
   } catch (err) {
-    console.error("Proxy error:", err);
-    return res.status(500).send("Proxy Error");
+    console.error(err);
+    res.status(500).send("Proxy error: " + err.message);
   }
 }
